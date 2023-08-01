@@ -1,0 +1,22 @@
+class first;
+  bit x = 1'b1;
+endclass
+
+module tb();
+  first f1;
+  initial begin
+    f1 = new();
+    $display("-------------------------------");  
+    $display("The value of the x is %0b",f1.x);  
+    $display("-------------------------------");
+  end
+endmodule
+===================================================================================
+---------------------------------OUTPUT--------------------------------------------
+===================================================================================
+# KERNEL: -------------------------------
+# KERNEL: The value of the x is 1
+# KERNEL: -------------------------------
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.
+Done
