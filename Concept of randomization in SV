@@ -1,16 +1,13 @@
 //sv code to generate 20 random number using for loop and rand keyword
-
 class temp;
   //data member
   rand bit [3:0] data1;
   rand bit [3:0] data2;
   rand bit [31:0] data3;
 endclass
-
 module tb();
   temp t;
   integer i;
-  
   initial begin 
       t = new();
     for(i=0;i<20;i++) begin
@@ -19,5 +16,28 @@ module tb();
       #10;
     end
   end
-
 endmodule
+----------------------------------------------------------------------------------------------
+Output:
+# KERNEL: data1 = 6, data2 = 5, data3 = 255048483
+# KERNEL: data1 = 4, data2 = 15, data3 = 1955723693
+# KERNEL: data1 = 11, data2 = 8, data3 = 1972537735
+# KERNEL: data1 = 8, data2 = 10, data3 = 2032954554
+# KERNEL: data1 = 11, data2 = 13, data3 = 1153955981
+# KERNEL: data1 = 4, data2 = 9, data3 = 1448836505
+# KERNEL: data1 = 1, data2 = 11, data3 = 1697640087
+# KERNEL: data1 = 11, data2 = 1, data3 = 3480011635
+# KERNEL: data1 = 7, data2 = 14, data3 = 263157635
+# KERNEL: data1 = 8, data2 = 8, data3 = 1274491501
+# KERNEL: data1 = 14, data2 = 10, data3 = 4039848974
+# KERNEL: data1 = 2, data2 = 0, data3 = 3995951480
+# KERNEL: data1 = 5, data2 = 1, data3 = 3522852061
+# KERNEL: data1 = 2, data2 = 2, data3 = 3125097604
+# KERNEL: data1 = 11, data2 = 8, data3 = 1483238507
+# KERNEL: data1 = 6, data2 = 12, data3 = 210055223
+# KERNEL: data1 = 9, data2 = 4, data3 = 3780331644
+# KERNEL: data1 = 6, data2 = 12, data3 = 560616128
+# KERNEL: data1 = 12, data2 = 12, data3 = 3338026734
+# KERNEL: data1 = 9, data2 = 14, data3 = 352399702
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.
