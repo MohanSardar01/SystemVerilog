@@ -1,0 +1,23 @@
+//sv code to generate 20 random number using for loop and rand keyword
+
+class temp;
+  //data member
+  rand bit [3:0] data1;
+  rand bit [3:0] data2;
+  rand bit [31:0] data3;
+endclass
+
+module tb();
+  temp t;
+  integer i;
+  
+  initial begin 
+      t = new();
+    for(i=0;i<20;i++) begin
+      t.randomize();
+      $display("data1 = %0d, data2 = %0d, data3 = %0d", t.data1, t.data2, t.data3);
+      #10;
+    end
+  end
+
+endmodule
