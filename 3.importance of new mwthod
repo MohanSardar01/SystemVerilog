@@ -1,0 +1,11 @@
+class temp;
+  bit [3:0] a = 4'b0111;
+endclass
+
+module tb;
+  temp t;
+  initial begin
+    t = new();
+    $display("The value of a: %b",t.a);
+  end
+endmodule
