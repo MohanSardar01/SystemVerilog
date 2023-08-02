@@ -1,0 +1,24 @@
+class temp;
+  bit [7:0] data;
+  
+  function void read(input bit [7:0] data);
+    this.data = data;
+  endfunction
+  
+endclass
+
+module tb();
+  temp t;
+  initial begin
+    t = new();
+    t.read(8'b10101100);
+    #10;
+    $display("read data: %0b",t.data");
+  end
+endmodule
+
+====================================================================================
+---------------------------------OUTPUT--------------------------------------------
+====================================================================================
+
+# KERNEL: read data: 10101100
