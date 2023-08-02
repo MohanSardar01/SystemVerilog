@@ -1,9 +1,17 @@
 class temp;
+  
   bit [7:0] data = 8'b10101111;
   
-  function void run();
+ /*
+ function void run();
     $display("The value of data is %0b",data);
   endfunction
+*/
+  
+  task run();
+    $display("The value of data is %0b",data);
+  endtask
+  
 endclass
 
 module tb;
