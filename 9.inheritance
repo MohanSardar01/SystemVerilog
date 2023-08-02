@@ -1,0 +1,22 @@
+class base;
+  int x = 10;
+endclass
+
+class derived extends base;
+  int y = 20;
+endclass
+
+module tb;
+  derived d;
+  initial begin
+    d = new();
+    $display("value of x: %0d, and y: %0d", d.x, d.y);
+    #10;
+  end
+endmodule
+
+====================================================================================
+-------------------------------- OUTPUT -------------------------------------------
+====================================================================================
+
+value of x: 10, and y: 20
