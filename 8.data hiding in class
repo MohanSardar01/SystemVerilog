@@ -1,0 +1,27 @@
+class first;
+  
+  local int x = 25;
+  
+  function int give();
+    return x;
+  endfunction
+  
+endclass
+
+module tb;
+  first f1;
+  int result;
+  
+  initial begin
+    f1 = new();
+    result= f1.give;
+    $display("The value of x is %0b", result);
+  end
+  
+endmodule
+
+====================================================================================
+-------------------------------- OUTPUT -------------------------------------------
+====================================================================================
+
+# KERNEL: The value of x is 11001
