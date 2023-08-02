@@ -1,0 +1,24 @@
+class temp;
+  bit [7:0] data = 8'b10101111;
+  
+  function void run();
+    $display("The value of data is %0b",data);
+  endfunction
+endclass
+
+module tb;
+  temp t;
+  initial begin
+    t = new();
+    t.run();
+    t.data = 8'b10101100;
+    $display("the new value of data id %0b",t.data);
+  end
+endmodule
+
+====================================================================================
+---------------------------------OUTPUT--------------------------------------------
+====================================================================================
+
+# KERNEL: The value of data is 10101111
+# KERNEL: the new value of data id 10101100
