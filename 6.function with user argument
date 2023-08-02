@@ -1,0 +1,25 @@
+class temp;
+  
+  function bit [8:0]  add(input bit [7:0] a, input bit [7:0] b);
+    return(a+b);
+  endfunction
+  
+endclass
+
+module tb;
+  temp t;
+  bit [8:0] result;
+  
+  initial begin
+    t = new();
+    result = t.add(8'd25,8'd12);
+    #10;
+    $display("Result: %d",result);
+  end
+endmodule
+
+====================================================================================
+---------------------------------OUTPUT--------------------------------------------
+====================================================================================
+
+# KERNEL: Result:  37
