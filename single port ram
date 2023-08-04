@@ -1,0 +1,228 @@
+------------------------------------------------------------------
+DUT
+------------------------------------------------------------------
+module ram(
+input clk, rst, wr,
+  input [7:0] din,
+  input [5:0] addr;
+  output reg [7:0] dout
+);
+
+reg [7:0] mem [64];
+
+  always @(posedge clk) begin
+    if(rst == 1'b1)
+      for(i = 0; i < 64; i++) begin
+        mem[i] = 0;
+      end
+    else
+      if(wr == 1'b1)
+        mem[addr] <= din;
+    else
+      dout <= mem[addr];
+  end
+  
+endmodule
+
+------------------------------------------------------------------
+TESTBENCH
+------------------------------------------------------------------
+class transaction;
+  rand bit [7:0] din;
+  rand bit [5:0] addr;
+  bit [7:0] dout;
+  bit wr;
+endclass
+
+class generator;
+  transaction t;
+  mailbox mbx;
+  event done;
+  integer i;
+  
+  function new(mailbox mbx);
+    this.mbx = mbx;
+  endfunction
+  
+  task run();
+    t = new();
+    for(i=0; i<50; i++) begin
+    t.randomize();
+    mbx.put(t);
+      $display("[GEN]: data send to driver");
+    @(done);
+    end
+  endtask
+endclass
+
+interface ram_intf();
+  logic clk, rst, wr;
+  logic [7:0] din, dout;
+  logic [5:0] addr;
+endinterface
+
+class driver;
+  transaction t;
+  mailbox mbx;
+  event done;
+  
+  virtual ram_intf vif;
+  
+  function new(mailbox mbx);
+    this.mbx = mbx;
+  endfunction
+  
+  task run();
+    t = new();
+    forever begin
+      mbx.get(t);
+      vif.din = t.din;
+      vif.addr = t.addr;
+      $display("[drv]: data receive from gen");
+      ->done;
+      @(posedge vif.clk);
+    end
+    
+endclass
+    
+    class moniter;
+      mailbox mbx;
+      transaction t;
+      
+      virtual ram_intf vif;
+      
+      function new(mailbox mbx);
+       this.mbx = mbx;
+      endfunction
+  
+    task run();
+      t = new();
+    forever begin
+      t.wr = vif.wr;
+      t.din = vif.din;
+      t.addr = vif.addr;
+      t.dout = vif.dout;
+      mbx.put(t);
+      $display("[MON]: data send to scoreboard");
+      @(posedge vif.clk);
+    end
+    endtask
+    endclass
+    
+    class scoreboard;
+      mailbox mbx;
+      transaction t;
+      transactin tarr[256];
+      
+      function new(mailbox mbx);
+       this.mbx = mbx;
+      endfunction
+      
+      task run();
+        t = new();
+        forever begin;
+          mbx.get(t);
+          
+          if(t.wr = 1'b1) begin
+            if(tarr[t.addr] == null) begin
+              tarr[t.addr] == new();
+              tarr[t.addr] == t;
+              $display("data stored");
+            end
+          end
+         else begin
+           if(tarr[t.addr] == null) begin
+            if(t.dout == 0) begin
+              $display("data read is passed");
+            end
+            else begin
+              $display("data read failed");
+            end
+           end
+            else begin
+              if(t.dout == tarr[t.addr].din)
+                $display("data read is passed");
+              else
+                $display("data read failed");
+            end
+            
+          end
+          
+        end
+      endtask
+    endclass
+    
+    class environment;
+      generator gen;
+driver drv;
+monitor mon;
+scoreboard sco;
+ 
+virtual counter_intf vif;
+ 
+mailbox gdmbx;
+mailbox msmbx;
+ 
+event gddone;
+ 
+function new(mailbox gdmbx, mailbox msmbx);
+this.gdmbx = gdmbx;
+this.msmbx = msmbx;
+ 
+gen = new(gdmbx);
+drv = new(gdmbx);
+ 
+mon = new(msmbx);
+sco = new(msmbx);
+endfunction
+ 
+task run();
+gen.done = gddone;
+drv.done = gddone;
+ 
+drv.vif = vif;
+mon.vif = vif;
+ 
+fork 
+gen.run();
+drv.run();
+mon.run();
+sco.run();
+join_any
+ 
+endtask
+endclass
+    
+    module tb;
+      environment env;
+      ram_intf vif();
+      mailbox gdmbx;
+      mailbox msmbx;
+      
+      ram dut(vif.clk, vif.rst, vif.wr, vif.addr, vif,din, vif.dout);
+      
+      always #5 vif.clk = ~vif.clk;
+      initial begin
+        clk = 0;
+        rst = 1;
+        wr = 1;
+        #30;
+        rst = 0;
+        #100;
+        wr = 0;
+        #100;
+        rst = 1;
+      end
+      
+      initial begin
+        gdmbx = new();
+        msmbx = new();
+        
+        env = new(gdmbx,msmbx);
+        env.vif = vif;
+        env.run();
+        #600;
+        $finish;
+      end
+      
+    endmodule
