@@ -1,0 +1,182 @@
+---------------
+DUT
+-----------------
+module multiplier(
+    input logic [7:0] a,
+    input logic [7:0] b,
+    output logic [15:0] product
+);
+  
+    assign product = a * b;
+  
+endmodule
+
+-----------------------------
+TESTBENCH
+---------------------------------
+class transaction;
+    randc bit [7:0] a;
+    randc bit [7:0] b;
+    bit [15:0] product;
+endclass
+
+class generator;
+    mailbox mbx;
+    event done;
+    transaction t;
+    int i;
+  
+    function new(mailbox mbx);
+        this.mbx = mbx;
+    endfunction
+  
+    task main();
+        t = new();
+        for (i = 0; i < 20; i++) begin
+            t.randomize();
+            mbx.put(t);
+            $display("[gen]: data sent to driver");
+            @(done);
+            #10;
+        end
+    endtask
+endclass
+
+interface multiplier_intf();
+    logic [7:0] a, b;
+    logic [15:0] product;
+endinterface
+
+class driver;
+    mailbox mbx;
+    event done;
+    transaction t;
+  
+    virtual multiplier_intf vif;
+  
+    function new(mailbox mbx);
+        this.mbx = mbx;
+    endfunction
+  
+    task main();
+        t = new();
+        forever begin
+            mbx.get(t);
+            vif.a = t.a;
+            vif.b = t.b;
+            $display("[drv]: data received");
+            -> done;
+            #10;
+        end
+    endtask
+endclass
+
+class monitor;
+    mailbox mbx;
+    transaction t;
+  
+    virtual multiplier_intf vif;
+  
+    function new(mailbox mbx);
+        this.mbx = mbx;
+    endfunction
+  
+    task main();
+        t = new();
+        forever begin
+            t.a = vif.a;
+            t.b = vif.b;
+            t.product = vif.product;
+            mbx.put(t);
+            $display("[MON]: data sent to sco");
+            #20;
+        end
+    endtask
+endclass
+
+class scoreboard;
+    mailbox mbx;
+    transaction t;
+    bit [15:0] result;
+  
+    function new(mailbox mbx);
+        this.mbx = mbx;
+    endfunction
+  
+    task main();
+        t = new();
+        forever begin
+            mbx.get(t);
+            result = t.a * t.b;
+            if (result == t.product)
+                $display("TEST PASSED");
+            else
+                $display("TEST FAILED");
+            #10;
+        end
+    endtask
+endclass
+
+class environment;
+    generator gen;
+    driver drv;
+    monitor mon;
+    scoreboard sco;
+  
+    mailbox gdmbx;
+    mailbox msmbx;
+  
+    event gddone;
+  
+    virtual multiplier_intf vif;
+  
+    function new(mailbox gdmbx, mailbox msmbx);
+        this.gdmbx = gdmbx;
+        this.msmbx = msmbx;
+    
+        gen = new(gdmbx);
+        drv = new(gdmbx);
+        mon = new(msmbx);
+        sco = new(msmbx);
+    endfunction
+  
+    task main();
+        gen.done = gddone;
+        drv.done = gddone;
+    
+        drv.vif = vif;
+        mon.vif = vif;
+    
+        fork
+            gen.main();
+            drv.main();
+            mon.main();
+            sco.main();
+        join_any
+    endtask
+endclass
+
+module tb;
+    environment env;
+    mailbox gdmbx, msmbx;
+  
+    multiplier_intf vif();
+  
+    multiplier dut (vif.a, vif.b, vif.product);
+  
+    initial begin
+        gdmbx = new();
+        msmbx = new();
+    
+        env = new(gdmbx, msmbx);
+        env.vif = vif;
+        env.main();
+        #500;
+        $finish;
+    end
+endmodule
+
+====================================================================================
+-------------------------------- OUTPUT -------------------------------------------
+====================================================================================
+
